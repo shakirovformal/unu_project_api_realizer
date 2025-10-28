@@ -11,6 +11,7 @@ var ErrorDatabase = errors.New("Error with database")
 
 
 
+
 type RowObject struct {
 	UserId int `json:"userId"`
 	Object struct {

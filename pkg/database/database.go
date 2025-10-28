@@ -91,6 +91,15 @@ func (db *Db) DelRow(ctx context.Context, rdb *redis.Client, rowNumber string) (
 	return res, nil
 }
 
+func (db *Db) CheckUnfullfilledRows(ctx context.Context, rdb *redis.Client) ([]string, error) {
+	sliceKeys, err := rdb.Keys(ctx, "*").Result()
+	if err != nil {
+		return nil, models.ErrorDatabase
+	}
+	fmt.Println(sliceKeys)
+	return sliceKeys, nil
+}
+
 func validateRowObject(rowNumber string, obj *models.RowObject) error {
 
 	if len(rowNumber) == 0 {

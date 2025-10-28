@@ -144,3 +144,20 @@ func TestDelRow(t *testing.T) {
 	}
 
 }
+
+func TestGetAllKeys(t *testing.T) {
+	type Config struct {
+		Addr     string
+		Password string
+		DB       int
+	}
+	var dbConfig Config = Config{
+		Addr:     "localhost:6379",
+		Password: "",
+		DB:       0,
+	}
+	db := NewDB(dbConfig.Addr, dbConfig.Password, dbConfig.DB)
+	rdb := db.Connect(db)
+	_, err := db.CheckUnfullfilledRows(ctx, rdb)
+	require.NoError(t, err)
+}

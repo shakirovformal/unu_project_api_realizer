@@ -13,6 +13,7 @@ import (
 	"github.com/go-telegram/bot"
 	"github.com/go-telegram/bot/models"
 	"github.com/shakirovformal/unu_project_api_realizer/api"
+	"github.com/shakirovformal/unu_project_api_realizer/pkg/database"
 )
 
 type UserState struct {
@@ -79,8 +80,6 @@ func helpMessage(ctx context.Context, b *bot.Bot, update *models.Update) {
 /create_folder - Создание новой папки (В разработке)
 /create_task - создать задачу
 /delete_task - удалить задачу или задачи
-/restart - Перезапустить бота
-/cancel - отменить действие и выйти в главное меню
 Остальные команды в разработке 🙂
 Связаться с разработчиком: @tatarkazawarka`,
 	})
@@ -262,12 +261,28 @@ func handleFolderIdInput(ctx context.Context, b *bot.Bot, update *models.Update,
 }
 
 func createTask(ctx context.Context, b *bot.Bot, update *models.Update) {
+	ctxWT, cancel := context.WithTimeout(ctx, time.Second*30)
+	defer cancel()
 	slog.Info(fmt.Sprintf("User '%s' wrote '%s' for create folder", update.Message.Chat.Username, update.Message.Text))
 	chatID := update.Message.Chat.ID
-
+	dbInt, err := strconv.Atoi(os.Getenv("DB_DB"))
+	if err != nil {
+		slog.Error("Ошибка конвертации данных о таблице в базе данных, проверьте .env файл", "ERROR:", err)
+	}
 	// TODO: Сделать здесь логику, чтобы при входе в данную функцию, сначала проверялась очередь.
 	// Есть ли незавершенные задачи? Если есть, нужно ли обработать их в первую очередь или оставить на потом?
-
+	db := database.NewDB(os.Getenv("DB_HOST"), os.Getenv("DB_PASSWORD"), dbInt)
+	rdb := db.Connect(db)
+	stringUnfullfilled, err := db.CheckUnfullfilledRows(ctxWT, rdb)
+	if err != nil {
+		slog.Error("Простите, произошла какая-то неизвестная ошибка с базой данных, пожалуйста поправьте")
+	}
+	b.SendMessage(ctx, &bot.SendMessageParams{
+		ChatID: update.Message.Chat.ID,
+		Text:   fmt.Sprintf("Дело в том, что перед тем как создать новые задачи, давайте разберёмся со старыми. Я сходил в базу данных и нашёл строки, которые по каким-то либо причинам не были обработаны. Вот список %v", stringUnfullfilled),
+	})
+	// TODO: Сейчас надо здесь прописать логику, что есть необработанные строки, и сейчас мы запустим их в работу
+	
 	// Проверили что задач нет, запрашиваем у клиента номера строк для выполнения
 	setState(chatID, &UserState{
 		State:   STATE_WAIT_INPUT_ROWS,
