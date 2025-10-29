@@ -7,16 +7,14 @@ import (
 	"github.com/shakirovformal/unu_project_api_realizer/bot"
 )
 
-func __init__() {
-
-}
-
-func main() {
-
+func init() {
 	err := godotenv.Load(".env")
 	if err != nil {
 		log.Fatalf("Ошибка загрузки файла .env: %v", err)
 	}
+}
+
+func main() {
 
 	bot.Bot()
 }

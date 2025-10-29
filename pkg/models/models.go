@@ -8,7 +8,7 @@ var ErrorZeroValue = errors.New("Getting zero value")
 var ErrorUnmarshallJSON = errors.New("Promblem with decoding from JSON")
 var ErrorIncorrectData = errors.New("Incorrect data")
 var ErrorDatabase = errors.New("Error with database")
-
+var LongMessage = errors.New("Long message. Length bigger 2300 symbols")
 
 
 
