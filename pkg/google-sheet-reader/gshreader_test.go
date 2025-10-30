@@ -22,13 +22,13 @@ func TestReader(t *testing.T) {
 	testRowNegative := []string{"679"}
 
 	for _, value := range testRowPositive {
-		resp, err := Reader(spreadsheetId, value)
+		resp, err := Reader(spreadsheetId, "BOT", value)
 		if assert.NoError(t, err) {
-			require.Equal(t, "убрир мультрегион", resp.Values[0][0])
+			require.Equal(t, "убрир екб", resp.Values[0][0])
 		}
 	}
 	for _, value := range testRowNegative {
-		_, err = Reader(spreadsheetId, value)
+		_, err := Reader(spreadsheetId, "BOT", value)
 		require.EqualError(t, err, models.LongMessage.Error())
 	}
 

@@ -282,7 +282,7 @@ func createTask(ctx context.Context, b *bot.Bot, update *models.Update) {
 		Text:   fmt.Sprintf("Дело в том, что перед тем как создать новые задачи, давайте разберёмся со старыми. Я сходил в базу данных и нашёл строки, которые по каким-то либо причинам не были обработаны. Вот список %v", stringUnfullfilled),
 	})
 	// TODO: Сейчас надо здесь прописать логику, что есть необработанные строки, и сейчас мы запустим их в работу
-	
+
 	// Проверили что задач нет, запрашиваем у клиента номера строк для выполнения
 	setState(chatID, &UserState{
 		State:   STATE_WAIT_INPUT_ROWS,
@@ -307,29 +307,29 @@ func handleTaskRowInput(ctx context.Context, b *bot.Bot, update *models.Update, 
 		return
 	}
 	rows := strings.Split(update.Message.Text, ":")
-	beginRowString, endRowString := rows[0], rows[1]
+	beginRowString, _ := rows[0], rows[1]
 
-	beginRowInt, err := strconv.Atoi(beginRowString)
-	if err != nil {
-		slog.Error(fmt.Sprintf("Ошибка конвертации значения для начальной строки... Просьба проверить корректность. Пользователь %s попытался ввёл: %s что привело к данной ошибке", update.Message.Chat.Username, update.Message.Text))
-		b.SendMessage(ctx, &bot.SendMessageParams{
-			ChatID: chatID,
-			Text:   "Простите, вы ввели некорректное значение для начала работы. Пожалуйста, ориентируйтесь на пример который я вам показал",
-		})
-		clearState(chatID)
-		return
+	// // // beginRowInt, err := strconv.Atoi(beginRowString)
+	// // // if err != nil {
+	// // // 	slog.Error(fmt.Sprintf("Ошибка конвертации значения для начальной строки... Просьба проверить корректность. Пользователь %s попытался ввёл: %s что привело к данной ошибке", update.Message.Chat.Username, update.Message.Text))
+	// // // 	b.SendMessage(ctx, &bot.SendMessageParams{
+	// // // 		ChatID: chatID,
+	// // // 		Text:   "Простите, вы ввели некорректное значение для начала работы. Пожалуйста, ориентируйтесь на пример который я вам показал",
+	// // // 	})
+	// // // 	clearState(chatID)
+	// // // 	return
 
-	}
-	endRowInt, err := strconv.Atoi(endRowString)
-	if err != nil {
-		slog.Error(fmt.Sprintf("Ошибка конвертации значения для начальной строки... Просьба проверить корректность. Пользователь %s попытался ввёл: %s что привело к данной ошибке", update.Message.Chat.Username, update.Message.Text))
-		b.SendMessage(ctx, &bot.SendMessageParams{
-			ChatID: chatID,
-			Text:   "Простите, вы ввели некорректное значение для начала работы. Пожалуйста, ориентируйтесь на пример который я вам показал",
-		})
-		clearState(chatID)
-		return
-	}
+	// // // }
+	// // // endRowInt, err := strconv.Atoi(endRowString)
+	// // // if err != nil {
+	// // // 	slog.Error(fmt.Sprintf("Ошибка конвертации значения для начальной строки... Просьба проверить корректность. Пользователь %s попытался ввёл: %s что привело к данной ошибке", update.Message.Chat.Username, update.Message.Text))
+	// // // 	b.SendMessage(ctx, &bot.SendMessageParams{
+	// // // 		ChatID: chatID,
+	// // // 		Text:   "Простите, вы ввели некорректное значение для начала работы. Пожалуйста, ориентируйтесь на пример который я вам показал",
+	// // // 	})
+	// // 	clearState(chatID)
+	// // 	return
+	// }
 
 	// Показываем что начали обработку
 	b.SendMessage(ctx, &bot.SendMessageParams{
@@ -337,11 +337,12 @@ func handleTaskRowInput(ctx context.Context, b *bot.Bot, update *models.Update, 
 		Text:   "Создаю задачи...",
 	})
 
-	// Создаем папку
+	// Создаем task
 	client := api.NewClient(os.Getenv("URL_UNU"), os.Getenv("UNU_API_TOKEN"))
 	var clienObj api.UNUAPI = client
-
-	folder_id, err := clienObj.Add_task(beginRowInt, endRowInt)
+	ctx, cancel := context.WithTimeout(ctx, time.Second*30)
+	defer cancel()
+	task_id, err := clienObj.Add_task(ctx, beginRowString)
 
 	if err != nil {
 		slog.Error("Ошибка создания задачи:", "ERROR:", err)
@@ -352,7 +353,7 @@ func handleTaskRowInput(ctx context.Context, b *bot.Bot, update *models.Update, 
 	} else {
 		b.SendMessage(ctx, &bot.SendMessageParams{
 			ChatID: chatID,
-			Text:   fmt.Sprintf("✅  '%s' успешно создана!\nID: %d", folderName, folder_id),
+			Text:   fmt.Sprintf("✅  Задача успешно создана!\nID: %s", task_id),
 		})
 	}
 

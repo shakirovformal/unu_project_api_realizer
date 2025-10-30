@@ -1,16 +1,21 @@
 package models
 
-
 import "errors"
 
-var ErrorGetValueFromDatabase = errors.New("Error get value from database")
-var ErrorZeroValue = errors.New("Getting zero value")
-var ErrorUnmarshallJSON = errors.New("Promblem with decoding from JSON")
-var ErrorIncorrectData = errors.New("Incorrect data")
-var ErrorDatabase = errors.New("Error with database")
-var LongMessage = errors.New("Long message. Length bigger 2300 symbols")
-
-
+var (
+	// Errors
+	ErrorGetValueFromDatabase = errors.New("Error get value from database")
+	ErrorZeroValue            = errors.New("Getting zero value")
+	ErrorUnmarshallJSON       = errors.New("Promblem with decoding from JSON")
+	ErrorIncorrectData        = errors.New("Incorrect data")
+	ErrorDatabase             = errors.New("Error with database")
+	LongMessage               = errors.New("Long message. Length bigger 2300 symbols")
+	ErrorMatchingSite         = errors.New("Error with matching choose site. Please check correct name")
+	ErrorGoogleSheet          = errors.New("Error with getting value from google sheet")
+	// Other
+	GenderMale   = "мужской"
+	GenderFemale = "женский"
+)
 
 type RowObject struct {
 	UserId int `json:"userId"`

@@ -1,6 +1,7 @@
 package api
 
 import (
+	"context"
 	"encoding/json"
 	"fmt"
 	"io"
@@ -10,7 +11,11 @@ import (
 	"net/url"
 	"os"
 	"strconv"
+
+	gsr "github.com/shakirovformal/unu_project_api_realizer/pkg/google-sheet-reader"
 )
+
+var spreadsheetId = os.Getenv("SPREADSHEETID")
 
 type Client struct {
 	client_url   string
@@ -72,7 +77,7 @@ type UNUAPI interface {
 	// Approve_report()
 	// Reject_report()
 	// Get_expenses()
-	Add_task(beginRow, endRow int) (int, error)
+	Add_task(ctx context.Context, rowWork string) (int, error)
 	// Del_task()
 	// Task_limit_add()
 	// Edit_task()
@@ -202,12 +207,17 @@ func (c *Client) Delete_folder(folder_id int) (bool, error) {
 
 // task_id (int) – идентификатор созданной задачи
 
-func (c *Client) Add_task(beginRow, endRow int) (int, error) {
+func (c *Client) Add_task(ctx context.Context, rowWork string) (int, error) {
 	//"""Обработка в функции идёт только 1 строки"""
 
 	//TODO: Пойти в таблицу и получить строку
-	
+
+	resp, err := gsr.Reader(spreadsheetId, "BOT", rowWork)
+	if err != nil {
+		slog.Error("Ошибка получения данных из таблицы")
+	}
 	//TODO: Получить имя для задачи
+	_ = resp
 
 	//TODO: Получить описание задания
 
